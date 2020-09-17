@@ -1,0 +1,124 @@
+diff --git a/include/commands.h b/include/commands.h
+index 27d631a2..6b32ab01 100644
+--- a/include/commands.h
++++ b/include/commands.h
+@@ -180,7 +180,7 @@ void cmd_exec(I3_CMD, const char *nosn, const char *command);
+  * Implementation of 'focus left|right|up|down'.
+  *
+  */
+-void cmd_focus_direction(I3_CMD, const char *direction);
++void cmd_focus_direction(I3_CMD, const char *direction, const char *mode);
+ 
+ /**
+  * Implementation of 'focus next|prev sibling'
+diff --git a/include/tree.h b/include/tree.h
+index 0b758d53..e2cc9600 100644
+--- a/include/tree.h
++++ b/include/tree.h
+@@ -64,6 +64,13 @@ void tree_render(void);
+  */
+ void tree_next(Con *con, direction_t direction);
+ 
++/**
++ * Changes focus in the given direction, subject to the constraint that the
++ * next container is not hidden
++ *
++ */
++void tree_next_surface(Con *con, direction_t direction);
++
+ /**
+  * Get the previous / next sibling
+  *
+diff --git a/parser-specs/commands.spec b/parser-specs/commands.spec
+index ed9cf0f2..12322add 100644
+--- a/parser-specs/commands.spec
++++ b/parser-specs/commands.spec
+@@ -138,15 +138,14 @@ state WORKSPACE_NUMBER:
+   workspace = string
+       -> call cmd_workspace_number($workspace, $no_auto_back_and_forth)
+ 
+-# focus left|right|up|down
++# focus left|right|up|down|next|prev [surface]
++# focus next|prev sibling
+ # focus output <output>
+ # focus tiling|floating|mode_toggle
+ # focus parent|child
+ # focus
+ state FOCUS:
+-  direction = 'left', 'right', 'up', 'down'
+-      -> call cmd_focus_direction($direction)
+-  direction = 'prev', 'next'
++  direction = 'left', 'right', 'up', 'down', 'prev', 'next'
+       -> FOCUS_AUTO
+   'output'
+       -> FOCUS_OUTPUT
+@@ -160,8 +159,10 @@ state FOCUS:
+ state FOCUS_AUTO:
+   'sibling'
+       -> call cmd_focus_sibling($direction)
++  'surface'
++      -> call cmd_focus_direction($direction, "surface")
+   end
+-      -> call cmd_focus_direction($direction)
++      -> call cmd_focus_direction($direction, "normal")
+ 
+ state FOCUS_OUTPUT:
+   output = string
+diff --git a/src/commands.c b/src/commands.c
+index 70b0c8a2..bace5921 100644
+--- a/src/commands.c
++++ b/src/commands.c
+@@ -1245,10 +1242,10 @@ void cmd_exec(I3_CMD, const char *nosn, const char *command) {
+     } while (0)
+ 
+ /*
+- * Implementation of 'focus left|right|up|down|next|prev'.
++ * Implementation of 'focus left|right|up|down|next|prev normal|surface'.
+  *
+  */
+-void cmd_focus_direction(I3_CMD, const char *direction_str) {
++void cmd_focus_direction(I3_CMD, const char *direction_str, const char *mode) {
+     HANDLE_EMPTY_MATCH;
+     CMD_FOCUS_WARN_CHILDREN;
+ 
+@@ -1274,7 +1271,14 @@ void cmd_focus_direction(I3_CMD, const char *direction_str) {
+             orientation_t o = con_orientation(current->con->parent);
+             direction = direction_from_orientation_position(o, position);
+         }
+-        tree_next(current->con, direction);
++        if (strcmp(mode, "normal") == 0) {
++            tree_next(current->con, direction);
++        } else if (strcmp(mode, "surface") == 0) {
++            tree_next_surface(current->con, direction);
++        } else {
++            yerror("Unknown focus mode: %s.", mode);
++            return;
++        }
+     }
+ 
+     cmd_output->needs_tree_render = true;
+diff --git a/src/tree.c b/src/tree.c
+index 408afddd..7fb7ba44 100644
+--- a/src/tree.c
++++ b/src/tree.c
+@@ -620,6 +622,20 @@ void tree_next(Con *con, direction_t direction) {
+     con_activate(con_descend_focused(next));
+ }
+ 
++/*
++ * Changes focus in the given direction, subject to the constraint that the
++ * next container is not hidden
++ *
++ */
++void tree_next_surface(Con *con, direction_t direction) {
++    Con *next = con;
++    do {
++        con = next;
++        next = get_tree_next(con, direction);
++    } while (con_is_hidden(next));
++    tree_next(con, direction);
++}
++
+ /*
+  * Get the previous / next sibling
+  *
