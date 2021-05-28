@@ -1,22 +1,10 @@
 i like [i3](https://github.com/i3/i3), but its maintainers are drama queens
 that baselessly rejected a patch of mine, and even banned me, all due to
-some irc drama.
+some irc drama.  if you want to read _more_ about this drama, checkout the
+[appendix](#appendix) section.
 
 anyway, i'll keep my patches here.  for me to use, and others who like it.
 all while maintaining the taste of liberty, the taste of gplv3!
-
-*i3 drama synopsis—* if you're interested in knowing about this drama,
-basically a blind person that lurks in dark the corners of the `freenode`
-irc network, whom goes by the nick `squigz`, confused me against another
-person that apparently wasn't pleasant to `squigz`.  so, this `squigz`
-started banning me in channels where he is an op, spread railing
-accusations about me with other ops of other channels.  `squigz` even kept
-pushing ops of `#weechat-offtopic` to ban me (they refused since i didn't
-do anything wrong, of course `squigz` quit the channel, at least
-momentarily, since he is apparently a drama queen).  but the drama queens
-of `i3` (aka i3's maintainers) fell for it and went full twilight-mode.  if
-you want to read _more_ about this drama, checkout the
-[appendix](#appendix) section.
 
 # patches (so far just one)
 
@@ -24,7 +12,11 @@ you want to read _more_ about this drama, checkout the
 
 *synopsis—* this patch, in the file `i3-surface-focus-mode.patch`, is a
 simple solution to solve `i3`'s vertical and horizontal focusing swamps
-problem.  tested and works great with `x11-wm/i3-4.18.2`.
+problem.  tested and works great with `x11-wm/i3-4.18.2`, and it keeps
+working perfectly with later releases of `i3`.  currently i am using
+`x11-wm/i3-4.19.1` with no problem at all.  i have setup my `gentoo` to
+apply this patch automatically every time `i3` gets updated, and i forgot
+about it thanks to it working perfectly every time.
 
 ### usage
 
@@ -103,6 +95,18 @@ As you see above, I personally like it this way:
 
 
 # appendix
+
+
+*i3 drama synopsis—* a blind person that lurks in dark the corners of the
+`freenode` irc network, whom goes by the nick `squigz`, confused me against
+another person that apparently wasn't pleasant to `squigz`.  so, this
+`squigz` started banning me in channels where he is an op, spread railing
+accusations about me with other ops of other channels.  `squigz` even kept
+pushing ops of `#weechat-offtopic` to ban me (they refused since i didn't
+do anything wrong, of course `squigz` quit the channel, at least
+momentarily, since he is apparently a drama queen).  but the drama queens
+of `i3` (aka i3's maintainers) fell for it and went full twilight-mode.
+more info is below.
 
 - historical description about the stack/tab swamp problem:
   https://github.com/i3/i3/issues/3738
