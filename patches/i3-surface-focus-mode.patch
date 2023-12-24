@@ -1,8 +1,8 @@
 diff --git a/include/commands.h b/include/commands.h
-index 27d631a2..6b32ab01 100644
+index 17d06681..2bc982e9 100644
 --- a/include/commands.h
 +++ b/include/commands.h
-@@ -180,7 +180,7 @@ void cmd_exec(I3_CMD, const char *nosn, const char *command);
+@@ -174,7 +174,7 @@ void cmd_exec(I3_CMD, const char *nosn, const char *command);
   * Implementation of 'focus left|right|up|down'.
   *
   */
@@ -30,10 +30,10 @@ index 0b758d53..e2cc9600 100644
   * Get the previous / next sibling
   *
 diff --git a/parser-specs/commands.spec b/parser-specs/commands.spec
-index ed9cf0f2..12322add 100644
+index c0dcca7c..0a09359b 100644
 --- a/parser-specs/commands.spec
 +++ b/parser-specs/commands.spec
-@@ -138,15 +138,14 @@ state WORKSPACE_NUMBER:
+@@ -182,16 +182,15 @@ state WORKSPACE_NUMBER:
    workspace = string
        -> call cmd_workspace_number($workspace, $no_auto_back_and_forth)
  
@@ -43,6 +43,7 @@ index ed9cf0f2..12322add 100644
  # focus output <output>
  # focus tiling|floating|mode_toggle
  # focus parent|child
+ # focus workspace
  # focus
  state FOCUS:
 -  direction = 'left', 'right', 'up', 'down'
@@ -52,7 +53,7 @@ index ed9cf0f2..12322add 100644
        -> FOCUS_AUTO
    'output'
        -> FOCUS_OUTPUT
-@@ -160,8 +159,10 @@ state FOCUS:
+@@ -207,8 +206,10 @@ state FOCUS:
  state FOCUS_AUTO:
    'sibling'
        -> call cmd_focus_sibling($direction)
@@ -63,12 +64,12 @@ index ed9cf0f2..12322add 100644
 +      -> call cmd_focus_direction($direction, "normal")
  
  state FOCUS_OUTPUT:
-   output = string
+   output = word
 diff --git a/src/commands.c b/src/commands.c
-index 70b0c8a2..bace5921 100644
+index 98e22ee3..bd6e0dee 100644
 --- a/src/commands.c
 +++ b/src/commands.c
-@@ -1245,10 +1242,10 @@ void cmd_exec(I3_CMD, const char *nosn, const char *command) {
+@@ -1313,10 +1313,10 @@ void cmd_exec(I3_CMD, const char *nosn, const char *command) {
      } while (0)
  
  /*
@@ -81,7 +82,7 @@ index 70b0c8a2..bace5921 100644
      HANDLE_EMPTY_MATCH;
      CMD_FOCUS_WARN_CHILDREN;
  
-@@ -1274,7 +1271,14 @@ void cmd_focus_direction(I3_CMD, const char *direction_str) {
+@@ -1342,7 +1342,14 @@ void cmd_focus_direction(I3_CMD, const char *direction_str) {
              orientation_t o = con_orientation(current->con->parent);
              direction = direction_from_orientation_position(o, position);
          }
@@ -98,10 +99,10 @@ index 70b0c8a2..bace5921 100644
  
      cmd_output->needs_tree_render = true;
 diff --git a/src/tree.c b/src/tree.c
-index 408afddd..7fb7ba44 100644
+index cd4fca44..8e306687 100644
 --- a/src/tree.c
 +++ b/src/tree.c
-@@ -620,6 +622,20 @@ void tree_next(Con *con, direction_t direction) {
+@@ -626,6 +626,20 @@ void tree_next(Con *con, direction_t direction) {
      con_activate(con_descend_focused(next));
  }
  
